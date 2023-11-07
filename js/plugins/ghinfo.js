@@ -44,12 +44,24 @@ const GitHubInfo = {
   },
   layout: (cfg) => {
     const el = $(cfg.el)[0];
-    GitHubInfo.requestAPI(cfg.api, function(data) {
-      const arr = data.content || data;
+    function fill(data) {
       for (let key of Object.keys(data)) {
         $(el).find("[type=text]#" + key).text(data[key]);
         $(el).find("[type=link]#" + key).attr("href", data[key]);
         $(el).find("[type=img]#" + key).attr("src", data[key]);
+      }
+    }
+    GitHubInfo.requestAPI(cfg.api, function(data) {
+      const idx = el.getAttribute('index');
+      if (idx != undefined) {
+        const arr = data.content || data;
+        if (arr && arr.length > idx) {
+          let obj = arr[idx];
+          obj['latest-tag-name'] = obj['name'];
+          fill(arr[idx]);
+        }
+      } else {
+        fill(data);
       }
     }, function() {
     });
@@ -57,7 +69,7 @@ const GitHubInfo = {
 }
 
 $(function () {
-  const els = document.getElementsByClassName('github-info-wrap');
+  const els = document.getElementsByClassName('stellar-ghinfo-api');
   for (var i = 0; i < els.length; i++) {
     const el = els[i];
     const api = el.getAttribute('api');
